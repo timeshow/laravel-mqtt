@@ -110,7 +110,7 @@ public function SubscribetoTopic($topic)
     }
 ```
 #### Subscribing topic using Facade
-## You can also subscribe to multiple topics using the same function $topic can be array of topics e.g ['topic1', 'topic2']
+#### You can also subscribe to multiple topics using the same function $topic can be array of topics e.g ['topic1', 'topic2']
 
 ``` php
 use Mqtt;
@@ -148,7 +148,7 @@ public function SendMsgViaMqtt($topic, $message)
 ```
 
 #### Subscribing topic using Helper method
-## You can also subscribe to multiple topics using the same function $topic can be array of topics e.g ['topic1', 'topic2']
+#### You can also subscribe to multiple topics using the same function $topic can be array of topics e.g ['topic1', 'topic2']
 
 ``` php
 

@@ -20,13 +20,15 @@ class MqttService
     public $localcert;
     public $localpk;
 
-    function __construct($address, $port, $timeout, $clientId, $cafile = NULL, $localCert = NULL, $localPk = NULL, $debug=false){
+    public function __construct($address, $port, $timeout, $clientId, $cafile = null, $localCert = null, $localPk = null, $debug=false)
+    {
         $this->debug = $debug;
         $this->broker($address, $port, $timeout, $clientId, $cafile, $localCert, $localPk);
     }
 
     /* sets the broker details */
-    function broker($address, $port, $timeout, $clientid, $cafile = NULL, $localcert = NULL, $localpk = NULL){
+    public function broker($address, $port, $timeout, $clientid, $cafile = null, $localcert = null, $localpk = null)
+    {
         $this->address = $address;
         $this->port = $port;
         $this->timeout = $timeout;
@@ -36,7 +38,8 @@ class MqttService
         $this->localpk = $localpk;
     }
 
-    function connect_auto($clean = true, $will = NULL, $username = NULL, $password = NULL){
+    public function connect_auto($clean = true, $will = null, $username = null, $password = null)
+    {
         while($this->connect($clean, $will, $username, $password)==false){
             sleep(10);
         }
@@ -44,7 +47,8 @@ class MqttService
     }
 
 
-    function connect($clean = true, $will = NULL, $username = NULL, $password = NULL){
+    public function connect($clean = true, $will = null, $username = null, $password = null)
+    {
 
         if($will) $this->will = $will;
         if($username) $this->username = $username;
@@ -69,7 +73,7 @@ class MqttService
             return false;
         }
         stream_set_timeout($this->socket, 5);
-        stream_set_blocking($this->socket, 0);
+        stream_set_blocking($this->socket, false);
         $i = 0;
         $buffer = "";
         $buffer .= chr(0x00); $i++;
@@ -85,20 +89,20 @@ class MqttService
         $var = 0;
         if($clean) $var+=2;
         //Add will info to header
-        if($this->will != NULL){
+        if($this->will != null){
             $var += 4; // Set will flag
             $var += ($this->will['qos'] << 3); //Set will qos
             if($this->will['retain'])	$var += 32; //Set will retain
         }
-        if($this->username != NULL) $var += 128;	//Add username to header
-        if($this->password != NULL) $var += 64;	//Add password to header
+        if($this->username != null) $var += 128;	//Add username to header
+        if($this->password != null) $var += 64;	//Add password to header
         $buffer .= chr($var); $i++;
         //Keep alive
         $buffer .= chr($this->keepalive >> 8); $i++;
         $buffer .= chr($this->keepalive & 0xff); $i++;
         $buffer .= $this->strwritestring($this->clientid,$i);
         //Adding will to payload
-        if($this->will != NULL){
+        if($this->will != null){
             $buffer .= $this->strwritestring($this->will['topic'],$i);
             $buffer .= $this->strwritestring($this->will['content'],$i);
         }
@@ -121,7 +125,8 @@ class MqttService
         return true;
     }
 
-    function read($int = 8192, $nb = false){
+    public function read($int = 8192, $nb = false)
+    {
         //	print_r(socket_get_status($this->socket));
 
         $string="";
@@ -143,7 +148,8 @@ class MqttService
         return $string;
     }
 
-    function subscribe($topics, $qos = 0){
+    public function subscribe($topics, $qos = 0)
+    {
         $i = 0;
         $buffer = "";
         $id = $this->msgid;
@@ -173,26 +179,30 @@ class MqttService
         $string = $this->read($bytes);
     }
 
-    function ping(){
+    public function ping()
+    {
         $head = chr(0xc0);
         $head .= chr(0x00);
         fwrite($this->socket, $head, 2);
         if($this->debug) echo "ping sent\n";
     }
 
-    function disconnect(){
+    public function disconnect()
+    {
         $head = " ";
         $head[0] = chr(0xe0);
         $head[1] = chr(0x00);
         fwrite($this->socket, $head, 2);
     }
 
-    function close(){
+    public function close()
+    {
         $this->disconnect();
         stream_socket_shutdown($this->socket, STREAM_SHUT_WR);
     }
 
-    function publish($topic, $content, $qos = 0, $retain = 0){
+    public function publish($topic, $content, $qos = 0, $retain = 0)
+    {
         $i = 0;
         $buffer = "";
         $buffer .= $this->strwritestring($topic,$i);
@@ -214,7 +224,8 @@ class MqttService
         fwrite($this->socket, $buffer, $i);
     }
 
-    function message($msg){
+    public function message($msg)
+    {
         $tlen = (ord($msg[0])<<8) + ord($msg[1]);
         $topic = substr($msg,2,$tlen);
         $msg = substr($msg,($tlen+2));
@@ -234,10 +245,11 @@ class MqttService
         if($this->debug && !$found) echo "msg received but no match in subscriptions\n";
     }
 
-    function proc( $loop = true){
+    public function proc( $loop = true)
+    {
         if(1){
             $sockets = array($this->socket);
-            $w = $e = NULL;
+            $w = $e = null;
             $cmd = 0;
 
             //$byte = fgetc($this->socket);
@@ -297,7 +309,8 @@ class MqttService
         return 1;
     }
 
-    function getmsglength(&$msg, &$i){
+   public function getmsglength(&$msg, &$i)
+   {
         $multiplier = 1;
         $value = 0 ;
         do{
@@ -309,7 +322,8 @@ class MqttService
         return $value;
     }
 
-    function setmsglength($len){
+    public function setmsglength($len)
+    {
         $string = "";
         do{
             $digit = $len % 128;
@@ -322,7 +336,8 @@ class MqttService
         return $string;
     }
 
-    function strwritestring($str, &$i){
+    public function strwritestring($str, &$i)
+    {
         $ret = " ";
         $len = strlen($str);
         $msb = $len >> 8;
@@ -334,7 +349,8 @@ class MqttService
         return $ret;
     }
 
-    function printstr($string){
+    public function printstr($string)
+    {
         $strlen = strlen($string);
         for($j=0;$j<$strlen;$j++){
             $num = ord($string[$j]);

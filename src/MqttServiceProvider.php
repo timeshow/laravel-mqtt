@@ -21,9 +21,11 @@ class MqttServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        self::$packagePath = __DIR__;
+
         $this->publishes(
             [
-                __DIR__ . '/config/mqtt.php' => config_path('mqtt.php'),
+                self::$packagePath . '/config/mqtt.php' => config_path('mqtt.php'),
             ],
             'mqtt'
         );
